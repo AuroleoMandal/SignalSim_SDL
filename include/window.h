@@ -1,9 +1,5 @@
-#include <SDL2/SDL.h>
-
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 640
-#define OFFSET 50
-#define WIDTH (WINDOW_WIDTH - OFFSET)
+#pragma once
+#include<main.h>
 
 #define CLEAR_R 190
 #define CLEAR_G 190

@@ -1,4 +1,4 @@
-#include <window.h>
+#include<window.h>
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
