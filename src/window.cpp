@@ -12,20 +12,32 @@ void window_INIT()
 }
 
 //Clear screen each frame
-void window_CLEAR()
+void window_clear()
 {
     SDL_SetRenderDrawColor(renderer, CLEAR_R, CLEAR_G, CLEAR_B, CLEAR_A);
     SDL_RenderClear(renderer);
 }
 
-void window_AXES()
+//Draw axes
+void window_axes()
 {
     SDL_SetRenderDrawColor(renderer, AXIS_R, AXIS_G, AXIS_B, AXIS_A);
     SDL_RenderDrawLine(renderer, OFFSET, 0, OFFSET, WINDOW_HEIGHT);
     SDL_RenderDrawLine(renderer, OFFSET, WINDOW_HEIGHT/2, WINDOW_WIDTH, WINDOW_HEIGHT/2);
 }
 
-Uint16 window_POLLEVENT()
+void window_scale_markers()
+{
+    int scale_markers = 5;
+    SDL_SetRenderDrawColor(renderer, AXIS_R, AXIS_G, AXIS_B, AXIS_A);
+        for(int i = 100; i < WINDOW_WIDTH; i+= 100)
+        {
+            SDL_RenderDrawLine(renderer, OFFSET + i, (WINDOW_HEIGHT/2)-scale_markers, OFFSET + i, (WINDOW_HEIGHT/2)+scale_markers);
+        }
+}
+
+//Polling interrupt, returns a specific number for each button
+Uint16 window_pollEvent()
 {
     while(SDL_PollEvent(&event))
         {
@@ -51,13 +63,21 @@ Uint16 window_POLLEVENT()
     return 0;
 }
 
-void window_DRAW(SDL_Point* wave)
+//Draw whichever wave structure was passed onto it
+void window_draw(waveTemplate wave) 
 {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderDrawLines(renderer, wave, WIDTH);
+    SDL_RenderDrawLines(renderer, wave.wavepoint, WIDTH);
 }
 
-void window_RENDER()
+void window_drawSum(waveTemplate* waves) 
+{
+    SDL_SetRenderDrawColor(renderer, 255, 200, 200, 255);
+    SDL_RenderDrawLines(renderer, waves[MAX_WAVES].wavepoint, WIDTH);
+}
+
+//Render the current drawing on screen
+void window_render()
 {
     SDL_RenderPresent(renderer);  
 }

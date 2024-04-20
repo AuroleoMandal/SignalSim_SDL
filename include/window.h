@@ -19,8 +19,11 @@
 
 
 void window_INIT();
-void window_CLEAR();
-void window_AXES();
-Uint16 window_POLLEVENT();
-void window_DRAW(SDL_Point*);
-void window_RENDER();
+void window_clear();
+void window_axes();
+Uint16 window_pollEvent();
+void window_draw(waveTemplate);
+void window_drawSum(waveTemplate*); 
+void window_render();
+
+void window_scale_markers();

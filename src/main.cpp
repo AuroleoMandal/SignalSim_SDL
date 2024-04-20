@@ -1,59 +1,52 @@
 #include<main.h>
+#include<userinput.h>
 #include<window.h>
 #include<wave.h>
 
-#include<stdio.h> //For troubleshooting
+uint16_t running = 1;
 
-bool running = true;
-uint32_t g_scale = 1;
-uint32_t f_scale = 1;
-
-float freq = M_PI;
-
+waveTemplate waves[MAX_WAVES+1];
 
 int main(int argc, char* args[])
 {
+    user_input(waves);
+
+
     window_INIT();
-
-    SDL_Point* wave1 = new SDL_Point[WIDTH];
-    waveVariables wave1_attr;
-
-
     while (running)
     { 
-        wave1 = wave_BUILD(wave1, wave1_attr);
+        wave_buildAll(waves);
+        wave_sum(waves);
+        window_clear();
+        window_axes();
+        
+        window_scale_markers();
 
-        window_CLEAR();
-        window_AXES();
-
-        switch(window_POLLEVENT())
+        switch(window_pollEvent())
         {
             case QUIT:
-                running = false;
+                running = 0;
             case KEY_UP:
-                wave_INCREASEY();
+                wave_increaseY();
                 break;
             case KEY_DOWN:
-                wave_DECREASEY();
+                wave_decreaseY();
                 break;
             case KEY_LEFT:
-                wave_DECREASEX();
+                wave_decreaseX();
                 break;
             case KEY_RIGHT:
-                wave_INCREASEX();
+                wave_increaseX();
                 break;
         }
+        for(uint16_t wavenumber = 0; wavenumber < MAX_WAVES; wavenumber++)
+        {
+            window_draw(waves[wavenumber]);
+        }
 
-
-
-        // for(int i = 0; i < WIDTH; i++)
-        // {
-        //     float t = -1*(sin (i*M_PI/x_scale))*y_scale; //multiply with -1 because y-axis is inverted
-        //     wave[i].x = i + OFFSET;
-        //     wave[i].y = WINDOW_HEIGHT/2 + (int)t;
-        // }
-        window_DRAW(wave1);
-        window_RENDER();
+        window_drawSum(waves);
+        
+        window_render();
     }
 
     return 0;
