@@ -3,6 +3,7 @@
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 SDL_Event event;
+SDL_Point* tempWave = new SDL_Point[WIDTH];
 
 //Initialize SDL
 void window_INIT()
@@ -26,14 +27,18 @@ void window_axes()
     SDL_RenderDrawLine(renderer, OFFSET, WINDOW_HEIGHT/2, WINDOW_WIDTH, WINDOW_HEIGHT/2);
 }
 
-void window_scale_markers()
+void window_scale_markers(float x_scale, float y_scale)
 {
-    int scale_markers = 5;
-    SDL_SetRenderDrawColor(renderer, AXIS_R, AXIS_G, AXIS_B, AXIS_A);
-        for(int i = 100; i < WINDOW_WIDTH; i+= 100)
-        {
-            SDL_RenderDrawLine(renderer, OFFSET + i, (WINDOW_HEIGHT/2)-scale_markers, OFFSET + i, (WINDOW_HEIGHT/2)+scale_markers);
-        }
+    SDL_SetRenderDrawColor(renderer, SCALE_R, SCALE_G, SCALE_B, SCALE_A);
+
+        for(int i = x_scale; i < WINDOW_WIDTH; i+= x_scale)
+            SDL_RenderDrawLine(renderer, OFFSET + i, 0, OFFSET + i, WINDOW_HEIGHT);
+
+        for(int i = WINDOW_HEIGHT/2 + y_scale; i < WINDOW_HEIGHT; i+= y_scale)
+            SDL_RenderDrawLine(renderer, OFFSET, i, WINDOW_WIDTH, i);
+
+        for(int i = WINDOW_HEIGHT/2 - y_scale; i > 0 ; i-= y_scale)
+            SDL_RenderDrawLine(renderer, OFFSET, i, WINDOW_WIDTH, i);
 }
 
 //Polling interrupt, returns a specific number for each button
@@ -63,17 +68,27 @@ Uint16 window_pollEvent()
     return 0;
 }
 
-//Draw whichever wave structure was passed onto it
-void window_draw(waveTemplate wave) 
+//Draw all the waves present in the waveTemplate struct array
+void window_draw(waveTemplate* waves) 
 {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderDrawLines(renderer, wave.wavepoint, WIDTH);
-}
-
-void window_drawSum(waveTemplate* waves) 
-{
-    SDL_SetRenderDrawColor(renderer, 255, 200, 200, 255);
-    SDL_RenderDrawLines(renderer, waves[MAX_WAVES].wavepoint, WIDTH);
+    uint8_t wave_R = 117;
+    uint8_t wave_G = 29;
+    uint8_t wave_B = 187;
+    for (uint16_t wavenumber = 0; wavenumber <= MAX_WAVES; wavenumber++)
+    {
+        for(uint32_t pixel = 0; pixel < WIDTH; pixel++)
+        {
+            tempWave[pixel].y = (waves[wavenumber].points[pixel].y) + WINDOW_HEIGHT/2;
+            tempWave[pixel].x = (waves[wavenumber].points[pixel].x) + OFFSET;
+        }
+        SDL_SetRenderDrawColor(renderer, wave_R, wave_G, wave_B, 255);
+        SDL_RenderDrawLines(renderer, tempWave, WIDTH);
+        wave_R += 61;
+        wave_G -= 17;
+        wave_B += 107;
+    }
+    
+    
 }
 
 //Render the current drawing on screen
@@ -81,19 +96,3 @@ void window_render()
 {
     SDL_RenderPresent(renderer);  
 }
-
-
-
-//int scale_markers = 5;
-        // for(int i = x_scale; i < WINDOW_WIDTH; i+= x_scale)
-        // {
-        //     SDL_RenderDrawLine(renderer, OFFSET + i, (WINDOW_HEIGHT/2)-scale_markers, OFFSET + i, (WINDOW_HEIGHT/2)+scale_markers);
-        // }
-        // for(int i = WINDOW_HEIGHT/2 + y_scale; i < WINDOW_HEIGHT; i+= y_scale)
-        // {
-        //     SDL_RenderDrawLine(renderer, OFFSET - scale_markers, i, OFFSET + scale_markers, i);
-        // }
-        // for(int i = WINDOW_HEIGHT/2 - y_scale; i > 0; i-= y_scale)
-        // {
-        //     SDL_RenderDrawLine(renderer, OFFSET - scale_markers, i, OFFSET + scale_markers, i);
-        // }

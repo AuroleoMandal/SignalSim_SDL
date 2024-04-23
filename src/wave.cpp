@@ -1,119 +1,66 @@
 #include<wave.h>
 
-static float x_scale = 1;
-static float y_scale = 1;
-
-/*  void wave_build((struct waveTemplate) waves, (unsigned 32 bit) pixel)
-This function is called by wave_buildAll() multiple times, 
-iterating through all of the waves (instances of waveTemplate structure array <main.h>) 
-Checks waveTemplate->flags(uint16) and modifies SDL_Point* accordingly 
-*/
-void wave_build(waveTemplate*, uint16_t);
-
-/*  float wave_sine((unsigned 32 bit) pixel, (floating point) frequency)
+/*  float wave_sine(waveTemplate structure, abscissa)
 Returns the ampiltude of a Sine wave at a 
-corresponding abscissa adjusted to the scale 100 pixels = 1 unit.
-Scale is adjusted by user input calling the wave_increase/decrease_x/y() functions
+corresponding abscissa adjusted to the scale passed to wave_build().
 */
-float wave_sine(uint32_t, float);
+float wave_sine(waveTemplate, float);
 
-/*  float wave_square((struct waveTemplate*) waves, (unsigned 32 bit) pixel, (unsigned 16 bit) wavenumber)
+/*  float wave_square(waveTemplate structure, abscissa)
 Returns the ampiltude of a Square wave at a 
-corresponding abscissa adjusted to the scale 100 pixels = 1 unit.
-Scale is adjusted by user input calling the wave_increase/decrease_x/y() functions
+corresponding abscissa adjusted to the scale passed to wave_build().
 */
-float wave_square(waveTemplate*, uint32_t, uint16_t);
+float wave_square(waveTemplate, float);
 
 
-void wave_buildAll(waveTemplate* waves)
+void wave_build(waveTemplate* waves, float x_scale, float y_scale)
 {
     for(uint16_t wavenumber = 0; wavenumber < MAX_WAVES; wavenumber++)
     {
-        wave_build(waves, wavenumber);
-    }
+        for(uint32_t pixel = 0; pixel < WIDTH; pixel ++)
+        {
+            float abscissa = pixel/x_scale;
+            waves[wavenumber].points[pixel].x = pixel;
+
+            if(waves[wavenumber].flags & SINE)
+                waves[wavenumber].points[pixel].y = wave_sine(waves[wavenumber], abscissa) * y_scale;
         
-}
-
-void wave_build(waveTemplate* waves, uint16_t wavenumber)
-{
-    if(waves[wavenumber].flags & SINE)
-    {
-        for(uint32_t pixel = 0; pixel < WIDTH; pixel ++)
-        {
-            waves[wavenumber].wavepoint[pixel].y = \
-            (-1*wave_sine(pixel, waves[wavenumber].frequency)*waves[wavenumber].amplitude)\
-            + WINDOW_HEIGHT/2 + waves->bias;
-            waves[wavenumber].wavepoint[pixel].x = pixel + OFFSET;
-        }
-    }
-    if(waves[wavenumber].flags & SQUARE)
-    {
-        for(uint32_t pixel = 0; pixel < WIDTH; pixel ++)
-        {
-            waves[wavenumber].wavepoint[pixel].y = wave_square(waves, pixel, wavenumber);
-            waves[wavenumber].wavepoint[pixel].x = pixel + OFFSET;
+            if(waves[wavenumber].flags & SQUARE)
+                waves[wavenumber].points[pixel].y = wave_square(waves[wavenumber], abscissa) * y_scale;
         }
     }
 
-}
-
-
-float wave_sine(uint32_t pixel, float freq)
-{
-    float amplitude;
-        amplitude = sin(pixel/(100.0f*x_scale)*M_PI*freq)*100.0f;
-    return amplitude*y_scale;
-}
-
-float wave_square(waveTemplate* waves, uint32_t pixel, uint16_t wavenumber)
-{
-    int highstate = (waves[wavenumber].high_state * -100 * y_scale) + WINDOW_HEIGHT/2;
-    int lowstate = (waves[wavenumber].low_state * -100 * y_scale) + WINDOW_HEIGHT/2;
-    float time_period = 1.0f / waves[wavenumber].frequency;
-    float high_period = \
-    waves[wavenumber].duty_cycle * time_period * x_scale * 100;
-    int adjusted_time_period = waves[wavenumber].time_period * x_scale * 100;
-    if(pixel % adjusted_time_period < high_period)
-        return highstate;
-    else
-        return lowstate; 
-}
-
-
-
-void wave_sum(waveTemplate* waves)
-{
+    //Assign the value of 0 to all y coordinates of the wave holding the summation
+    //(Last element in the waveTemplate structure array)
     for(uint32_t pixel = 0; pixel < WIDTH; pixel ++)
     {
-        waves[MAX_WAVES].wavepoint[pixel].y = 0;
-        waves[MAX_WAVES].wavepoint[pixel].x = pixel + OFFSET;
+        waves[MAX_WAVES].points[pixel].y = 0;
+        waves[MAX_WAVES].points[pixel].x = pixel;
     }
+    
+    //Iteratively add all the waves to wave holding the summation
     for(uint16_t wavenumber = 0; wavenumber < MAX_WAVES; wavenumber ++)
     {
         for(uint32_t pixel = 0; pixel < WIDTH; pixel ++)
         {
-            waves[MAX_WAVES].wavepoint[pixel].y = (waves[MAX_WAVES].wavepoint[pixel].y + waves[wavenumber].wavepoint[pixel].y)/2;
+            waves[MAX_WAVES].points[pixel].y = \
+            (waves[MAX_WAVES].points[pixel].y + waves[wavenumber].points[pixel].y)/2;
         }
     }
-
 }
 
-void wave_increaseX()
+
+float wave_sine(waveTemplate waves, float abscissa)
 {
-    x_scale*=1.05;
+    float amplitude;
+    amplitude = sin(abscissa * waves.frequency);
+    return amplitude;
 }
 
-void wave_decreaseX()
+float wave_square(waveTemplate waves, float abscissa)
 {
-    x_scale*=0.95;
-}
-
-void wave_increaseY()
-{
-    y_scale*=1.05;
-}
-
-void wave_decreaseY()
-{
-    y_scale*=0.95;
+    float high_period = \
+    waves.duty_cycle * waves.time_period;
+    return (fmodf(abscissa, waves.time_period) < high_period)?\
+    waves.high_state : waves.low_state;
 }

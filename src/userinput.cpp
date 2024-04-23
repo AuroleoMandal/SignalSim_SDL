@@ -5,9 +5,9 @@ uint16_t wavenumber = 0;
 
 /*  void user_defineWave(waveTemplate*)
 Asks for user input and modifies waveTemplate->flags(unsigned 16 bit int)
-to instruct wave_build()<wave.cpp> on how to build the wave
+to instruct wave_build()<wave.h> on how to build the wave
 */
-void user_defineWave(waveTemplate*);
+void user_defineWaveShape(waveTemplate*);
 
 
 void user_input(waveTemplate* waves)
@@ -16,35 +16,34 @@ void user_input(waveTemplate* waves)
 
     for(wavenumber = 0; wavenumber < MAX_WAVES; wavenumber++)
     {
-        user_defineWave(waves);
+        user_defineWaveShape(waves);
     }
 }
 
-void user_defineWave(waveTemplate* waves)
+void user_defineWaveShape(waveTemplate* waves)
 {
-    uint16_t flags = 0;
+    waves[wavenumber].flags = 0;
 
     int type;
     printf("\nWave number %d\
     \nWhat kind of wave would you like?\
     \n1.Sine  2.Square  3.Triangle\n", wavenumber+1);
 
-    scanf("%d", &type);
+    scanf(" %d", &type);
 
     switch(type)
     {
         case(1):
-            flags|= SINE;
+            waves[wavenumber].flags|= SINE;
             break;
         case(2):
-            flags|= SQUARE;
+            waves[wavenumber].flags|= SQUARE;
             break;
         case(3):
-            flags|= TRIANGLE;
+            waves[wavenumber].flags|= TRIANGLE;
             break;
         default:
             printf("Invalid input, please try again\n\n");
+            user_defineWaveShape(waves);
     }
-    
-    waves[wavenumber].flags = flags;
 }

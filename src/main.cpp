@@ -3,6 +3,8 @@
 #include<window.h>
 #include<wave.h>
 
+static float x_scale = 100.0f;
+static float y_scale = 100.0f;
 uint16_t running = 1;
 
 waveTemplate waves[MAX_WAVES+1];
@@ -15,36 +17,33 @@ int main(int argc, char* args[])
     window_INIT();
     while (running)
     { 
-        wave_buildAll(waves);
-        wave_sum(waves);
+        wave_build(waves, x_scale, y_scale);
+
         window_clear();
+
         window_axes();
         
-        window_scale_markers();
+        window_scale_markers(x_scale, y_scale);
 
         switch(window_pollEvent())
         {
             case QUIT:
                 running = 0;
             case KEY_UP:
-                wave_increaseY();
+                y_scale*=1.05;
                 break;
             case KEY_DOWN:
-                wave_decreaseY();
+                y_scale*=0.95;
                 break;
             case KEY_LEFT:
-                wave_decreaseX();
+                x_scale*=0.95;
                 break;
             case KEY_RIGHT:
-                wave_increaseX();
+                x_scale*=1.05;
                 break;
         }
-        for(uint16_t wavenumber = 0; wavenumber < MAX_WAVES; wavenumber++)
-        {
-            window_draw(waves[wavenumber]);
-        }
 
-        window_drawSum(waves);
+        window_draw(waves);
         
         window_render();
     }
