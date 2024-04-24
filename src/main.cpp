@@ -5,50 +5,68 @@
 
 static float x_scale = 100.0f;
 static float y_scale = 100.0f;
+static uint32_t window_height = 640;
+static uint32_t window_width = 960;
+
 uint16_t running = 1;
 
 waveTemplate waves[MAX_WAVES+1];
+
+//Calculates and renders the current scene
+void drawwindow(void);
 
 int main(int argc, char* args[])
 {
     user_input(waves);
 
 
-    window_INIT();
+    window_INIT(window_width, window_height);
+
+    drawwindow();
+
     while (running)
     { 
-        wave_build(waves, x_scale, y_scale);
-
-        window_clear();
-
-        window_axes();
+        uint16_t eventID = window_pollEvent();
         
-        window_scale_markers(x_scale, y_scale);
+        if(eventID & QUIT)
+            running = 0;
 
-        switch(window_pollEvent())
+        if(eventID & KEY_UP)
+            y_scale*=1.05;
+
+        if(eventID & KEY_DOWN)
+            y_scale*=0.95;
+
+        if(eventID & KEY_LEFT)
+            x_scale*=0.95;
+
+        if(eventID & KEY_RIGHT)
+            x_scale*=1.05;
+
+        if(eventID & REDRAW)
         {
-            case QUIT:
-                running = 0;
-            case KEY_UP:
-                y_scale*=1.05;
-                break;
-            case KEY_DOWN:
-                y_scale*=0.95;
-                break;
-            case KEY_LEFT:
-                x_scale*=0.95;
-                break;
-            case KEY_RIGHT:
-                x_scale*=1.05;
-                break;
+            drawwindow();
         }
-
-        window_draw(waves);
-        
-        window_render();
     }
 
     return 0;
+}
+
+void drawwindow()
+{
+        window_getsize(&window_width, &window_height);
+
+        wave_build(waves, window_width, window_height, x_scale, y_scale);
+
+        window_clear();
+
+        window_axes(window_width, window_height);
+
+        window_scale_markers(window_width, window_height, x_scale, y_scale);
+
+        window_draw(waves, window_width, window_height);
+
+        window_render();
 }
 
 

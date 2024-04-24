@@ -1,10 +1,8 @@
 #pragma once
 #include <SDL2/SDL.h>
 
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 640
 #define OFFSET 50
-#define WIDTH (WINDOW_WIDTH - OFFSET)
+#define MAX_WIDTH 1980
 
 #define MAX_WAVES 2
 
@@ -23,11 +21,10 @@ typedef wavePoints wavePoints;
 //Stores the point coordinates and all the metadata, can be modified by user_input() <userinput.h>
 struct waveTemplate
 {
-    wavePoints* points = new wavePoints[WIDTH];
+    wavePoints* points = new wavePoints[MAX_WIDTH];
     uint16_t flags = 0;
     
     float frequency = 1.0f;
-    float time_period = 1.0f / frequency;
     float amplitude = 1.0f;
     float bias = 0;
     float duty_cycle = 0.5f;
