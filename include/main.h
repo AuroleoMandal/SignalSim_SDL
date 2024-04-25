@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include<stdlib.h>
 #include<config.h>
 
 #define MAX_WIDTH 1980
@@ -21,7 +22,6 @@ typedef wavePoints wavePoints;
 //Stores the point coordinates and all the metadata, can be modified by user_input() <userinput.h>
 struct waveTemplate
 {
-    wavePoints* points = new wavePoints[MAX_WIDTH];
     uint16_t flags = 0;
     
     float frequency = 1.0f;
@@ -31,4 +31,6 @@ struct waveTemplate
     float duty_cycle = 0.5f;
     float high_state = 1.0f;
     float low_state = -1.0f;
+    wavePoints* points = (wavePoints*)malloc(sizeof(wavePoints)*MAX_WIDTH);
 };
+typedef waveTemplate waveTemplate;

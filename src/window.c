@@ -3,15 +3,15 @@
 int line_boundingbox = 3;
 int mouse_x = 0, mouse_y = 0;
 
-SDL_Window* window = nullptr;
-SDL_Renderer* renderer = nullptr;
+SDL_Window* window = NULL;
+SDL_Renderer* renderer = NULL;
 SDL_Event event;
 
 struct tempWave
 {
-    SDL_Point* tempPoint = new SDL_Point[MAX_WIDTH];
+    SDL_Point* tempPoint = (SDL_Point*)malloc(sizeof(SDL_Point)*MAX_WIDTH);
     uint8_t wave_R, wave_G, wave_B, wave_A;
-};
+};typedef struct tempWave tempWave;
 
 tempWave tempWaves[MAX_WAVES+1];
 
