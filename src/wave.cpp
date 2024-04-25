@@ -12,6 +12,18 @@ corresponding abscissa adjusted to the scale passed to wave_build().
 */
 float wave_square(waveTemplate, float);
 
+/*  float wave_square(waveTemplate structure, abscissa)
+Returns the ampiltude of a Sawtooth wave at a 
+corresponding abscissa adjusted to the scale passed to wave_build().
+*/
+float wave_sawtooth(waveTemplate, float);
+
+/*  float wave_square(waveTemplate structure, abscissa)
+Returns the ampiltude of a Reverse sawtooth wave at a 
+corresponding abscissa adjusted to the scale passed to wave_build().
+*/
+float wave_reversesawtooth(waveTemplate, float);
+
 
 void wave_build(waveTemplate* waves, uint32_t window_width, uint32_t window_height, float x_scale, float y_scale)
 {
@@ -19,14 +31,22 @@ void wave_build(waveTemplate* waves, uint32_t window_width, uint32_t window_heig
     {
         for(uint32_t pixel = 0; pixel < window_width; pixel ++)
         {
-            float abscissa = pixel/x_scale;
+            float abscissa = (pixel/x_scale) + waves[wavenumber].phase;
             waves[wavenumber].points[pixel].x = pixel;
 
             if(waves[wavenumber].flags & SINE)
-                waves[wavenumber].points[pixel].y = wave_sine(waves[wavenumber], abscissa) * y_scale;
+                waves[wavenumber].points[pixel].y = wave_sine(waves[wavenumber], abscissa) ;
         
             if(waves[wavenumber].flags & SQUARE)
-                waves[wavenumber].points[pixel].y = wave_square(waves[wavenumber], abscissa) * y_scale;
+                waves[wavenumber].points[pixel].y = wave_square(waves[wavenumber], abscissa);
+
+            if(waves[wavenumber].flags & SAWTOOTH)
+                waves[wavenumber].points[pixel].y = wave_sawtooth(waves[wavenumber], abscissa);
+
+            if(waves[wavenumber].flags & REVERSESAWTOOTH)
+                waves[wavenumber].points[pixel].y = wave_reversesawtooth(waves[wavenumber], abscissa);
+
+            waves[wavenumber].points[pixel].y = (waves[wavenumber].points[pixel].y + waves[wavenumber].bias) * y_scale;
         }
     }
 
@@ -38,16 +58,12 @@ void wave_build(waveTemplate* waves, uint32_t window_width, uint32_t window_heig
         waves[MAX_WAVES].points[pixel].x = pixel;
     }
     
-    //Iteratively add all the waves to wave holding the summation
-    for(uint16_t wavenumber = 0; wavenumber < MAX_WAVES; wavenumber ++)
+    //Iteratively add all the waves to last wave in the array
+    for(uint32_t pixel = 0; pixel < window_width; pixel ++)
     {
-        for(uint32_t pixel = 0; pixel < window_width; pixel ++)
+        for(uint16_t wavenumber = 0; wavenumber < MAX_WAVES; wavenumber ++)
         {
-            if(wavenumber == 0)
-                waves[MAX_WAVES].points[pixel].y = waves[wavenumber].points[pixel].y;
-            else
-                waves[MAX_WAVES].points[pixel].y = \
-                (waves[MAX_WAVES].points[pixel].y + waves[wavenumber].points[pixel].y)/2;
+            waves[MAX_WAVES].points[pixel].y += waves[wavenumber].points[pixel].y;
         }
     }
 }
@@ -56,7 +72,7 @@ void wave_build(waveTemplate* waves, uint32_t window_width, uint32_t window_heig
 float wave_sine(waveTemplate waves, float abscissa)
 {
     float amplitude;
-    amplitude = sin(abscissa * waves.frequency) * waves.amplitude;
+    amplitude = sin(abscissa * waves.frequency * M_PI) * waves.amplitude;
     return amplitude;
 }
 
@@ -67,4 +83,20 @@ float wave_square(waveTemplate waves, float abscissa)
     waves.duty_cycle * time_period;
     return (fmodf(abscissa, time_period) < high_period)?\
     -waves.high_state : -waves.low_state;
+}
+
+float wave_sawtooth(waveTemplate waves, float abscissa)
+{
+    float time_period = 1.0f/waves.frequency;   
+    float travel = waves.high_state - waves.low_state;
+    float current_amplitude = waves.low_state+(travel * (1 - fmodf(abscissa, time_period)/time_period));
+    return -current_amplitude;
+}
+
+float wave_reversesawtooth(waveTemplate waves, float abscissa)
+{
+    float time_period = 1.0f/waves.frequency;   
+    float travel = waves.high_state - waves.low_state;
+    float current_amplitude = waves.low_state + (travel * fmodf(abscissa, time_period)/time_period);
+    return -current_amplitude;
 }

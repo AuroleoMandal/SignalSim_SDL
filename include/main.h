@@ -1,14 +1,14 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <stdio.h>
+#include<config.h>
 
-#define OFFSET 50
 #define MAX_WIDTH 1980
-
-#define MAX_WAVES 2
 
 #define SINE 0x0001
 #define SQUARE 0x0002
-#define TRIANGLE 0x0004
+#define SAWTOOTH 0x0004
+#define REVERSESAWTOOTH 0x0008
 
 //Stores the x and y coordinates of the points making up the wave
 struct wavePoints
@@ -27,6 +27,7 @@ struct waveTemplate
     float frequency = 1.0f;
     float amplitude = 1.0f;
     float bias = 0;
+    float phase = 0;
     float duty_cycle = 0.5f;
     float high_state = 1.0f;
     float low_state = -1.0f;

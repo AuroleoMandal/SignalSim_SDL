@@ -28,7 +28,7 @@ void user_defineWaveShape(waveTemplate* waves)
     int type;
     printf("\nWave number %d\
     \nWhat kind of wave would you like?\
-    \n1.Sine  2.Square  3.Triangle\n", wavenumber+1);
+    \n1.Sine  2.Square  3.Sawtooth  4.Reverse Sawtooth\n", wavenumber+1);
 
     scanf(" %d", &type);
 
@@ -41,7 +41,10 @@ void user_defineWaveShape(waveTemplate* waves)
             waves[wavenumber].flags|= SQUARE;
             break;
         case(3):
-            waves[wavenumber].flags|= TRIANGLE;
+            waves[wavenumber].flags|= SAWTOOTH;
+            break;
+        case(4):
+            waves[wavenumber].flags|= REVERSESAWTOOTH;
             break;
         default:
             printf("Invalid input, please try again\n\n");
@@ -54,13 +57,21 @@ void user_defineWaveProperties(waveTemplate* waves)
     float answer;
     if(waves[wavenumber].flags & SINE)
     {
-        printf("Please define frequency (In radians) ");
+        printf("Please define frequency ");
         scanf(" %f", &answer);
         waves[wavenumber].frequency = answer;
 
         printf("Please define amplitude ");
         scanf(" %f", &answer);
         waves[wavenumber].amplitude = answer;
+
+        printf("Please define the phase ");
+        scanf(" %f", &answer);
+        waves[wavenumber].phase = answer;
+
+        printf("Please define the bias ");
+        scanf(" %f", &answer);
+        waves[wavenumber].bias = answer;
     }
 
     if(waves[wavenumber].flags & SQUARE)
@@ -83,5 +94,28 @@ void user_defineWaveProperties(waveTemplate* waves)
         printf("Please define the low state ");
         scanf(" %f", &answer);
         waves[wavenumber].low_state = answer;
+
+        printf("Please define the phase ");
+        scanf(" %f", &answer);
+        waves[wavenumber].phase = answer;
+    }
+
+        if(waves[wavenumber].flags & (SAWTOOTH|REVERSESAWTOOTH))
+    {
+        printf("Please define the frequency ");
+        scanf(" %f", &answer);
+        waves[wavenumber].frequency = answer;
+
+        printf("Please define the high state ");
+        scanf(" %f", &answer);
+        waves[wavenumber].high_state = answer;
+
+        printf("Please define the low state ");
+        scanf(" %f", &answer);
+        waves[wavenumber].low_state = answer;
+
+        printf("Please define the phase ");
+        scanf(" %f", &answer);
+        waves[wavenumber].phase = answer;
     }
 }

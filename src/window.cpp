@@ -1,19 +1,38 @@
 #include<window.h>
 
+int line_boundingbox = 3;
+int mouse_x = 0, mouse_y = 0;
+
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 SDL_Event event;
-SDL_Point* tempWave = new SDL_Point[MAX_WIDTH];
+
+struct tempWave
+{
+    SDL_Point* tempPoint = new SDL_Point[MAX_WIDTH];
+    uint8_t wave_R, wave_G, wave_B, wave_A;
+};
+
+tempWave tempWaves[MAX_WAVES+1];
+
+
+int checkonline(int wavenumber, int pixel);
 
 //Initialize SDL
-void window_INIT(uint32_t window_width, uint32_t window_height)
+int window_INIT(uint32_t window_width, uint32_t window_height)
 {
-    SDL_Init(SDL_INIT_VIDEO);
+    if(SDL_Init(SDL_INIT_VIDEO)!=0)
+    {
+        fprintf(stderr,"Error initialising SDL: %s\n", SDL_GetError());
+        return 1;
+    }
     window = SDL_CreateWindow("SignalSim", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width, window_height, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    return 0;
 }
 
-//Returns the window size in the addresses of Width and height passed onto it
+//Returns the window size in the addresses of width and height passed onto it
 void window_getsize(uint32_t *window_width, uint32_t *window_height)
 {
     SDL_GetWindowSize(window, (int*)window_width, (int*)window_height);
@@ -63,6 +82,21 @@ Uint16 window_pollEvent()
                     return REDRAW;
             }
 
+            if(event.type == SDL_MOUSEMOTION)
+            {
+                mouse_x = event.motion.x;
+                mouse_y = event.motion.y;
+                return REDRAW;
+            }
+
+            if(event.type == SDL_MOUSEWHEEL)
+            {
+                if(event.wheel.y > 0)
+                    return MOUSEWHEEL_UP|REDRAW;
+                if(event.wheel.y < 0)
+                    return MOUSEWHEEL_DOWN|REDRAW;
+            }
+
             if(event.type == SDL_KEYDOWN)
             {
                 switch(event.key.keysym.sym)
@@ -84,21 +118,43 @@ Uint16 window_pollEvent()
 //Draw all the waves present in the waveTemplate struct array
 void window_draw(waveTemplate* waves, uint32_t window_width, uint32_t window_height) 
 {
-    uint8_t wave_R = 117;
-    uint8_t wave_G = 29;
-    uint8_t wave_B = 187;
     for (uint16_t wavenumber = 0; wavenumber <= MAX_WAVES; wavenumber++)
     {
+        tempWaves[wavenumber].wave_R = 0 + wavenumber * 109;
+        tempWaves[wavenumber].wave_G = 90 + wavenumber * 67;
+        tempWaves[wavenumber].wave_B = 50 - wavenumber * 217;
+        tempWaves[wavenumber].wave_A = 180;
+        
+        //Discard the topmost bit of RGB value to keep the colour dark
+        tempWaves[wavenumber].wave_R &= 0x7f;
+        tempWaves[wavenumber].wave_G &= 0x7f;
+        tempWaves[wavenumber].wave_B &= 0x7f;
+
+        //Colour the Summation wave differently
+        if(wavenumber == MAX_WAVES)
+        {
+            tempWaves[wavenumber].wave_R = 255;
+            tempWaves[wavenumber].wave_G = 255;
+            tempWaves[wavenumber].wave_B = 255;
+            tempWaves[wavenumber].wave_A = 255;
+        }
+
         for(uint32_t pixel = 0; pixel < window_width; pixel++)
         {
-            tempWave[pixel].y = (waves[wavenumber].points[pixel].y) + window_height/2;
-            tempWave[pixel].x = (waves[wavenumber].points[pixel].x) + OFFSET;
+            tempWaves[wavenumber].tempPoint[pixel].y = (waves[wavenumber].points[pixel].y) + window_height/2;
+            tempWaves[wavenumber].tempPoint[pixel].x = (waves[wavenumber].points[pixel].x) + OFFSET;
+
+            if(checkonline(wavenumber, pixel))
+            {
+                tempWaves[wavenumber].wave_R = 255;
+                tempWaves[wavenumber].wave_G = 0;
+                tempWaves[wavenumber].wave_B = 0;
+                tempWaves[wavenumber].wave_A = 255;
+            }
+
         }
-        SDL_SetRenderDrawColor(renderer, wave_R, wave_G, wave_B, 255);
-        SDL_RenderDrawLines(renderer, tempWave, window_width);
-        wave_R += 61;
-        wave_G -= 17;
-        wave_B += 107;
+        SDL_SetRenderDrawColor(renderer, tempWaves[wavenumber].wave_R, tempWaves[wavenumber].wave_G, tempWaves[wavenumber].wave_B, tempWaves[wavenumber].wave_A);
+        SDL_RenderDrawLines(renderer, tempWaves[wavenumber].tempPoint, window_width);
     }
     
     
@@ -108,4 +164,17 @@ void window_draw(waveTemplate* waves, uint32_t window_width, uint32_t window_hei
 void window_render()
 {
     SDL_RenderPresent(renderer);  
+}
+
+int checkonline(int wavenumber, int pixel)
+{
+    int maxX = tempWaves[wavenumber].tempPoint[pixel].x + line_boundingbox;
+    int minX = tempWaves[wavenumber].tempPoint[pixel].x - line_boundingbox;
+    int maxY = tempWaves[wavenumber].tempPoint[pixel].y + line_boundingbox;
+    int minY = tempWaves[wavenumber].tempPoint[pixel].y - line_boundingbox;
+
+    if(mouse_x >= minX && mouse_x <= maxX && mouse_y >= minY && mouse_y <= maxY)
+        return 1;
+    else
+        return 0;
 }

@@ -19,7 +19,6 @@ int main(int argc, char* args[])
 {
     user_input(waves);
 
-
     window_INIT(window_width, window_height);
 
     drawwindow();
@@ -28,24 +27,25 @@ int main(int argc, char* args[])
     { 
         uint16_t eventID = window_pollEvent();
         
-        if(eventID & QUIT)
-            running = 0;
-
-        if(eventID & KEY_UP)
+        if(eventID & (KEY_UP|MOUSEWHEEL_UP))
             y_scale*=1.05;
 
-        if(eventID & KEY_DOWN)
+        if(eventID & (KEY_DOWN|MOUSEWHEEL_DOWN))
             y_scale*=0.95;
 
-        if(eventID & KEY_LEFT)
+        if(eventID & (KEY_LEFT|MOUSEWHEEL_DOWN))
             x_scale*=0.95;
 
-        if(eventID & KEY_RIGHT)
+        if(eventID & (KEY_RIGHT|MOUSEWHEEL_UP))
             x_scale*=1.05;
 
         if(eventID & REDRAW)
-        {
             drawwindow();
+
+        if(eventID & QUIT)
+        {
+            SDL_Quit();
+            running = 0;
         }
     }
 
@@ -60,9 +60,9 @@ void drawwindow()
 
         window_clear();
 
-        window_axes(window_width, window_height);
-
         window_scale_markers(window_width, window_height, x_scale, y_scale);
+
+        window_axes(window_width, window_height);
 
         window_draw(waves, window_width, window_height);
 

@@ -1,9 +1,8 @@
 # -*- MakeFile -*-
 
-all:
-	g++ -g -Wall src/*.cpp -I. -I include -lSDL2main -lSDL2 -o build/app
-	./build/app
+CC = g++
+CC_TAGS = -g -Wall
 
-release:
-	g++ -o3 -Wall src/*.cpp -I. -I include -lSDL2main -lSDL2 -o build/app
-	./build/app
+all:
+	$(CC) $(CC_TAGS) src/*.cpp -I. -Iinclude -lSDL2main -lSDL2 -o build/SignalSim
+	./build/SignalSim
