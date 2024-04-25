@@ -28,4 +28,4 @@ start runWindows.bat
 
 ![Screenshot 1](/img/example1.png?raw=true "Screenshot 1")
 
-![Screenshot 2](/img/example2.png.gif?raw=true "Screenshot 1")
+![Screenshot 2](/img/example2.png.gif?raw=true "Screenshot 2")
